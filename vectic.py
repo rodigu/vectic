@@ -106,6 +106,9 @@ class Vectic:
         """
         return Vectic(self.x*math.cos(t)-self.x*math.sin(t), self.y*math.sin(t)+self.y*math.cos(t))
 
+    def copy(self):
+        return Vectic(self.x, self.y)
+
     def zero() -> float:
         """Zero vector
 

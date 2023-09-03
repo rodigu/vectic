@@ -33,4 +33,5 @@ class Vectic:
  def norm(A):return A.dist(Vectic.zero())
  def normalized(A):return A/A.norm()
  def rot(A,t):return Vectic(A.x*math.cos(t)-A.x*math.sin(t),A.y*math.sin(t)+A.y*math.cos(t))
+ def copy(A):return Vectic(A.x,A.y)
  def zero():return Vectic(0,0)
