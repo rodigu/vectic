@@ -20,7 +20,6 @@ def TIC():
  v2*=20
  v2+=v
  circ(v2.x,v2.y,3,3)
- print(v2)
 
 
 import math

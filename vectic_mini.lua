@@ -1,4 +1,3 @@
-
 local Vectic={}
 Vectic.zero=function()return{x=0,y=0}end
 Vectic.new=function(x,y)
@@ -47,7 +46,7 @@ Vectic.new=function(x,y)
  v.dist=function(v2)return math.sqrt(v.dist2(v2))end
  v.norm=function()return v.dist(Vectic.zero())end
  v.len=v.norm
- v.eq=function(v2)return v.x==v2.x and v.y==v2.y
+ v.eq=function(v2)return v.x==v2.x and v.y==v2.y end
  v.normalized=function()return v.div(v.norm())end
  v.normalize=function()
   v=v.normalized()
