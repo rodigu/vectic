@@ -15,7 +15,6 @@
 ---@field dist VecCalc
 ---@field dist2 VecCalc
 ---@field norm fun(s:Vectic):number
----@field len VecFun
 ---@field eq fun(s:Vectic,v:Vectic):boolean
 ---@field normalize VecFun
 ---@field rotate fun(s:Vectic,t:number):Vectic
@@ -56,17 +55,16 @@ function NewVec(x,y)
 			v2=toVec(v2)
 			return NewVec(v.x//v2.x,v.y//v2.y)
 		end,
-		floor=function(v)return Vectic.floordiv(v,1)end,
+		floor=function(v)return v.floordiv(v,1)end,
 		dist2=function(v,v2)
 			v2=toVec(v2)
 			return(v.x-v2.x)^2+(v.y-v2.y)^2
 		end,
 		dist=function(v,v2)
 			v2=toVec(v2)
-			return math.sqrt(Vectic.dist2(v,v2))
+			return math.sqrt(v.dist2(v,v2))
 		end,
-		norm=function(v)return Vectic.dist(v,Vectic.zero())end,
-		len=Vectic.norm,
+		norm=function(v)return v.dist(v,NewVec(0,0))end,
 		eq=function(v,v2)
 			v2=toVec(v2)
 			return v.x==v2.x and v.y==v2.y
