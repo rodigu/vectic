@@ -1,3 +1,4 @@
+Vectic={}
 Vectic={
 	new=function(x,y)return{x=x,y=y}end,
 	add=function(v,v2)return Vectic.new(v.x+v2.x,v.y+v2.y)end,
@@ -21,5 +22,6 @@ Vectic={
 	normalize=function(v)return Vectic.div(v,Vectic.norm(v))end,
 	rotate=function(v,t)return Vectic.new(v.x*math.cos(t)-v.x*math.sin(t),v.y*math.sin(t)+v.y*math.cos(t))end,
 	copy=function(v)return Vectic.new(v.x,v.y)end,
-	zero=function()return Vectic.new(0,0)end
+	zero=function()return Vectic.new(0,0)end,
+	xy=function(v)return v.x,v.y end
 }

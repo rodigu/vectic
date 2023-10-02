@@ -1,6 +1,7 @@
 
 ---@alias Vec {x: number, y:number}
 ---@class Vectic
+Vectic={}
 Vectic={
 	---@param x number
 	---@param y number
@@ -65,5 +66,8 @@ Vectic={
 	---@return Vec
 	copy=function(v)return Vectic.new(v.x,v.y)end,
 	---@return Vec
-	zero=function()return Vectic.new(0,0)end
+	zero=function()return Vectic.new(0,0)end,
+	---@param v Vec
+	---@return number,number
+	xy=function(v)return v.x,v.y end
 }
