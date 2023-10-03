@@ -70,20 +70,25 @@ end
 ---@field vel Vectic
 ---@field m number
 ---@field c number
+---@field doMove boolean
+---@field hist Vectic[]
 
-local G=.0006
+local G=.0009
 
 ---@class Bodies
 Bodies={
+	limDist=2,
 	---@type Body[]
 	bodies={},
-	---@type fun(s:Bodies,x:number,y:number,m:number,c:number)
-	addBody=function(s,x,y,m,c)
+	---@type fun(s:Bodies,x:number,y:number,m:number,c:number,dm:boolean)
+	addBody=function(s,x,y,m,c,dm)
 		table.insert(s.bodies,{
 			pos=NewVec(x,y),
 			vel=NewVec(0,0),
 			m=m,
-			c=c
+			c=c,
+			doMove=dm,
+			hist={}
 		})
 	end,
 	---@type fun(s:Bodies)
@@ -92,19 +97,28 @@ Bodies={
 		local y=H/2-10
 		local side=50
 		local height=math.sqrt(side^2-(side/2)^2)
-		local mass=5
-		s:addBody(x-side/2,y,mass,4)
-		s:addBody(x+side/2,y,mass,9)
-		s:addBody(x,y+height,mass,2)
+		
+		s:addBody(x+side/2,y-2,160,9,true)
+		s.bodies[1].vel=NewVec(.7,2)
+		-- s:addBody(x-30,y,10,6,true)
+		-- s.bodies[2].vel=NewVec(.6,-.2)
+		s:addBody(x,y,600,2,false)
 	end,
 	---@type fun(s:Bodies)
 	run=function(s)
-		for i,_ in pairs(s.bodies) do
+		for i,b in pairs(s.bodies) do
 			s:attract(i)
 		end
 		for _,b in pairs(s.bodies) do
-			b.pos=b.pos:add(b.vel)
-			circ(b.pos.x,b.pos.y,b.m,b.c)
+			if b.doMove then
+				table.insert(b.hist,b.pos)
+				b.pos=b.pos:add(b.vel)
+			end
+			for _,p in pairs(b.hist) do
+				circ(p.x,p.y,b.m/100,b.c-1)
+			end
+			circ(b.pos.x,b.pos.y,b.m/50,b.c)
+			rect(_*15,0,5,5,b.c)
 			print(b.vel:norm(),10,_*10)
 		end
 	end,
@@ -112,8 +126,11 @@ Bodies={
 	attract=function(s,bidx)
 		for i,b2 in pairs(s.bodies) do
 			if bidx~=i then
-				s:applyForce(b2,s:force(s.bodies[bidx],b2))
-				local x,y=s.bodies[bidx].pos:xy()
+				local b1=s.bodies[bidx]
+				if b1.pos:dist2(b2.pos) > s.limDist then
+					s:applyForce(b2,s:force(b1,b2))
+				end
+				local x,y=b1.pos:xy()
 				line(x,y,b2.pos.x,b2.pos.y,14)
 			end
 		end
