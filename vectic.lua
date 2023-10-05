@@ -1,79 +1,102 @@
----@alias VecOpr fun(s:Vectic,v:Vectic|number):Vectic
----@alias VecCalc fun(s:Vectic,v:Vectic|number):number
----@alias VecFun fun(s:Vectic):Vectic
-
 ---@class Vectic
 ---@field x number
 ---@field y number
----@field add VecOpr
----@field sub VecOpr
----@field mul VecOpr
----@field repr fun(s:Vectic):string
----@field div VecOpr
----@field floordiv VecOpr
----@field floor VecFun
----@field dist VecCalc
----@field dist2 VecCalc
----@field norm fun(s:Vectic):number
----@field eq fun(s:Vectic,v:Vectic):boolean
----@field normalize VecFun
----@field rotate fun(s:Vectic,t:number):Vectic
----@field copy VecFun
----@field zero VecFun
----@field xy fun(v:Vectic):number,number
+local Vectic={}
+Vectic.__index=Vectic
 
----@type fun(x:number,y:number):Vectic
-function NewVec(x,y)
-	local toVec=function(v)
-		if type(v)=='number' then
-			return NewVec(v,v)
-		end
-		return v
-	end
-	---@type Vectic
-	local v={
-		x=x,
-		y=y,
-		add=function(v,v2)
-			v2=toVec(v2)
-			return NewVec(v.x+v2.x,v.y+v2.y)
-		end,
-		sub=function(v,v2)
-			v2=toVec(v2)
-			return NewVec(v.x-v2.x,v.y-v2.y)
-		end,
-		mul=function(v,v2)
-			v2=toVec(v2)
-			return NewVec(v.x*v2.x,v.y*v2.y)
-		end,
-		repr=function(v) return "NewVec("..v.x..", "..{v.y}..")"end,
-		div=function(v,v2)
-			v2=toVec(v2)
-			return NewVec(v.x/v2.x,v.y/v2.y)
-		end,
-		floordiv=function(v,v2)
-			v2=toVec(v2)
-			return NewVec(v.x//v2.x,v.y//v2.y)
-		end,
-		floor=function(v)return v.floordiv(v,1)end,
-		dist2=function(v,v2)
-			v2=toVec(v2)
-			return(v.x-v2.x)^2+(v.y-v2.y)^2
-		end,
-		dist=function(v,v2)
-			v2=toVec(v2)
-			return math.sqrt(v.dist2(v,v2))
-		end,
-		norm=function(v)return v.dist(v,NewVec(0,0))end,
-		eq=function(v,v2)
-			v2=toVec(v2)
-			return v.x==v2.x and v.y==v2.y
-		end,
-		normalize=function(v)return v:div(v:norm()) end,
-		rotate=function(v,t)return NewVec(v.x*math.cos(t)-v.x*math.sin(t),v.y*math.sin(t)+v.y*math.cos(t))end,
-		copy=function(v)return NewVec(v.x,v.y)end,
-		zero=function()return NewVec(0,0)end,
-		xy=function(v)return v.x,v.y end
-	}
-	return v
+---@type fun(a:number,b:number): Vectic
+Vectic.new=function(x,y)
+  local v = {x = x or 0, y = y or 0}
+  setmetatable(v, Vectic)
+  return v
 end
+
+---@alias VecticOperation<OUT> fun(a:number|Vectic,b:number|Vectic):OUT
+---@type VecticOperation<Vectic>
+function Vectic.__add(a,b)
+	a,b=Vectic.twoVec(a,b)
+	return Vectic.new(a.x+b.x,a.y+b.y)
+end
+---@type VecticOperation<Vectic>
+function Vectic.__sub(a, b)
+	a,b=Vectic.twoVec(a,b)
+  return Vectic.new(a.x - b.x, a.y - b.y)
+end
+---@type VecticOperation<Vectic>
+function Vectic.__mul(a, b)
+	a,b=Vectic.twoVec(a,b)
+	return Vectic.new(a.x*b.x,a.y*b.y)
+end
+---@type VecticOperation<Vectic>
+function Vectic.__div(a, b)
+	a,b=Vectic.twoVec(a,b)
+	return Vectic.new(a.x/b.x,a.y/b.y)
+end
+---@type VecticOperation<boolean>
+function Vectic.__eq(a, b)
+	a,b=Vectic.twoVec(a,b)
+	return a.x==b.x and a.y==b.y
+end
+---@type VecticOperation<boolean>
+function Vectic.__ne(a, b)
+	a,b=Vectic.twoVec(a,b)
+	return not Vectic.__eq(a, b)
+end
+---@type fun(a:Vectic):Vectic
+function Vectic.__unm(a)
+	return Vectic.new(-a.x, -a.y)
+end
+---@type VecticOperation<boolean>
+function Vectic.__lt(a, b)
+	a,b=Vectic.twoVec(a,b)
+	 return a.x < b.x and a.y < b.y
+end
+---@type VecticOperation<boolean>
+function Vectic.__le(a, b)
+	a,b=Vectic.twoVec(a,b)
+	 return a.x <= b.x and a.y <= b.y
+end
+---@type VecticOperation<string>
+function Vectic.__tostring(v)
+	 return "(" .. v.x .. ", " .. v.y .. ")"
+end
+---@type fun(a:Vectic|number,b:Vectic|number):Vectic,Vectic
+function Vectic.twoVec(a,b)
+	return Vectic.toVec(a),Vectic.toVec(b)
+end
+---@type fun(a:Vectic|number):Vectic
+function Vectic.toVec(a)
+	if type(a)=='number' then
+		return Vectic.new(a,a)
+	end
+	return a
+end
+---@type VecticOperation<Vectic>
+function Vectic.floordiv(a,b)
+	b=Vectic.toVec(b)
+	return Vectic.new(a.x//b.x,a.y//b.y)
+end
+---@type VecticOperation<number>
+function Vectic.dist2(a,b)
+	b=Vectic.toVec(b)
+	return(a.x-b.x)^2+(a.y-b.y)^2
+end
+---@type VecticOperation<number>
+function Vectic.dist(a,b)
+	b=Vectic.toVec(b)
+	return math.sqrt(a.dist2(a,b))
+end
+
+---@alias VecticFunction<OUT> fun(a:Vectic):OUT
+---@type VecticFunction<Vectic>
+function Vectic.floor(a)return a.floordiv(a,1)end
+---@type VecticFunction<number>
+function Vectic.norm(a)return a:dist(Vectic.new(0,0))end
+---@type VecticFunction<Vectic>
+function Vectic.normalize(a)return a/a:norm() end
+---@type fun(a:Vectic,t:number):Vectic
+function Vectic.rotate(a,t)return Vectic.new(a.x*math.cos(t)-a.x*math.sin(t),a.y*math.sin(t)+a.y*math.cos(t))end
+---@type VecticFunction<Vectic>
+function Vectic.copy(a)return Vectic.new(a.x,a.y)end
+
+return Vectic
