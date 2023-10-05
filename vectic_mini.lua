@@ -71,5 +71,6 @@ function Vectic.norm(a)return a:dist(Vectic.new(0,0))end
 function Vectic.normalize(a)return a/a:norm() end
 function Vectic.rotate(a,t)return Vectic.new(a.x*math.cos(t)-a.x*math.sin(t),a.y*math.sin(t)+a.y*math.cos(t))end
 function Vectic.copy(a)return Vectic.new(a.x,a.y)end
+function Vectic.xy(a) return a.x,a.y end
 
 return Vectic

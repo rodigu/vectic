@@ -98,5 +98,7 @@ function Vectic.normalize(a)return a/a:norm() end
 function Vectic.rotate(a,t)return Vectic.new(a.x*math.cos(t)-a.x*math.sin(t),a.y*math.sin(t)+a.y*math.cos(t))end
 ---@type VecticFunction<Vectic>
 function Vectic.copy(a)return Vectic.new(a.x,a.y)end
+---@type fun(a:Vectic):number,number
+function Vectic.xy(a) return a.x,a.y end
 
 return Vectic
