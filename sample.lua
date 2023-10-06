@@ -1,9 +1,9 @@
 -- title:   Lua Vectic Sample
--- author:  game developer, email, etc.
--- desc:    short description
--- site:    website link
--- license: MIT License (change this to your license of choice)
--- version: 0.1
+-- author:  https://github.com/rodigu
+-- desc:    Tiny vector library demo
+-- site:    https://github.com/rodigu/vectic
+-- license: GPL
+-- version: 1.0
 -- script:  lua
 
 W=240
