@@ -1,76 +1,27 @@
-local Vectic={}
-Vectic.__index=Vectic
-
-Vectic.new=function(x,y)
-  local v = {x = x or 0, y = y or 0}
-  setmetatable(v, Vectic)
-  return v
-end
-
-function Vectic.__add(a,b)
-	a,b=Vectic.twoVec(a,b)
-	return Vectic.new(a.x+b.x,a.y+b.y)
-end
-function Vectic.__sub(a, b)
-	a,b=Vectic.twoVec(a,b)
-  return Vectic.new(a.x - b.x, a.y - b.y)
-end
-function Vectic.__mul(a, b)
-	a,b=Vectic.twoVec(a,b)
-	return Vectic.new(a.x*b.x,a.y*b.y)
-end
-function Vectic.__div(a, b)
-	a,b=Vectic.twoVec(a,b)
-	return Vectic.new(a.x/b.x,a.y/b.y)
-end
-function Vectic.__eq(a, b)
-	a,b=Vectic.twoVec(a,b)
-	return a.x==b.x and a.y==b.y
-end
-function Vectic.__ne(a, b)
-	a,b=Vectic.twoVec(a,b)
-	return not Vectic.__eq(a, b)
-end
-function Vectic.__unm(a)
-	return Vectic.new(-a.x, -a.y)
-end
-function Vectic.__lt(a, b)
-	a,b=Vectic.twoVec(a,b)
-	 return a.x < b.x and a.y < b.y
-end
-function Vectic.__le(a, b)
-	a,b=Vectic.twoVec(a,b)
-	 return a.x <= b.x and a.y <= b.y
-end
-function Vectic.__tostring(v)
-	 return "(" .. v.x .. ", " .. v.y .. ")"
-end
-function Vectic.twoVec(a,b)
-	return Vectic.toVec(a),Vectic.toVec(b)
-end
-function Vectic.toVec(a)
-	if type(a)=='number' then
-		return Vectic.new(a,a)
-	end
-	return a
-end
-function Vectic.floordiv(a,b)
-	b=Vectic.toVec(b)
-	return Vectic.new(a.x//b.x,a.y//b.y)
-end
-function Vectic.dist2(a,b)
-	b=Vectic.toVec(b)
-	return(a.x-b.x)^2+(a.y-b.y)^2
-end
-function Vectic.dist(a,b)
-	b=Vectic.toVec(b)
-	return math.sqrt(a.dist2(a,b))
-end
-function Vectic.floor(a)return a.floordiv(a,1)end
-function Vectic.norm(a)return a:dist(Vectic.new(0,0))end
-function Vectic.normalize(a)return a/a:norm() end
-function Vectic.rotate(a,t)return Vectic.new(a.x*math.cos(t)-a.x*math.sin(t),a.y*math.sin(t)+a.y*math.cos(t))end
-function Vectic.copy(a)return Vectic.new(a.x,a.y)end
-function Vectic.xy(a) return a.x,a.y end
-
-return Vectic
+Vectic={}
+Vectic={
+	new=function(x,y)return{x=x,y=y}end,
+	add=function(v,v2)return Vectic.new(v.x+v2.x,v.y+v2.y)end,
+	sub=function(v,v2)return Vectic.new(v.x-v2.x,v.y-v2.y)end,
+	mul=function(v,s)return Vectic.new(v.x*s,v.y*s)end,
+	repr=function(v) return "Vectic.new("..v.x..", "..{v.y}..")"end,
+	div=function(v,s)
+	 if type(s)=="number" then return Vectic.new(v.x/s,v.y/s) end
+	 return Vectic.new(v.x/s.x,v.y/s.y)
+	end,
+	floordiv=function(v,s)
+	 if type(s)=="number"then return Vectic.new(v.x//s,v.y//s)end
+	 return Vectic.new(v.x//s.x,v.y//s.y)
+	end,
+	floor=function(v)return Vectic.floordiv(v,1)end,
+	dist2=function(v,v2)return(v.x-v2.x)^2+(v.y-v2.y)^2 end,
+	dist=function(v,v2)return math.sqrt(v.dist2(v2))end,
+	norm=function(v)return Vectic.dist(v,Vectic.zero())end,
+	len=Vectic.norm,
+	eq=function(v,v2)return v.x==v2.x and v.y==v2.y end,
+	normalize=function(v)return Vectic.div(v,Vectic.norm(v))end,
+	rotate=function(v,t)return Vectic.new(v.x*math.cos(t)-v.x*math.sin(t),v.y*math.sin(t)+v.y*math.cos(t))end,
+	copy=function(v)return Vectic.new(v.x,v.y)end,
+	zero=function()return Vectic.new(0,0)end,
+	xy=function(v)return v.x,v.y end
+}

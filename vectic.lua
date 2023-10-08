@@ -74,7 +74,7 @@ end
 ---@type VecticOperation<Vectic>
 function Vectic.floordiv(a,b)
 	b=Vectic.toVec(b)
-	return Vectic.new(a.x//b.x,a.y//b.y)
+	return Vectic.new(math.floor(a.x/b.x),math.floor(a.y/b.y))
 end
 ---@type VecticOperation<number>
 function Vectic.dist2(a,b)
@@ -100,5 +100,7 @@ function Vectic.rotate(a,t)return Vectic.new(a.x*math.cos(t)-a.x*math.sin(t),a.y
 function Vectic.copy(a)return Vectic.new(a.x,a.y)end
 ---@type fun(a:Vectic):number,number
 function Vectic.xy(a) return a.x,a.y end
+
+local v=Vectic.new(2,4)
 
 return Vectic
