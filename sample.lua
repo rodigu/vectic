@@ -1,69 +1,89 @@
 -- title:   Lua Vectic Sample
--- author:  game developer, email, etc.
--- desc:    short description
--- site:    website link
--- license: MIT License (change this to your license of choice)
--- version: 0.1
+-- author:  https://github.com/rodigu
+-- desc:    Tiny vector library demo
+-- site:    https://github.com/rodigu/vectic
+-- license: GPL
+-- version: 1.0
 -- script:  lua
 
 W=240
 H=136
+F=0
 
----@type fun(x:number,y:number):Vectic
-function NewVec(x,y)
-	local toVec=function(v)
-		if type(v)=='number' then
-			return NewVec(v,v)
-		end
-		return v
-	end
-	---@type Vectic
-	local v={
-		x=x,
-		y=y,
-		add=function(v,v2)
-			v2=toVec(v2)
-			return NewVec(v.x+v2.x,v.y+v2.y)
-		end,
-		sub=function(v,v2)
-			v2=toVec(v2)
-			return NewVec(v.x-v2.x,v.y-v2.y)
-		end,
-		mul=function(v,v2)
-			v2=toVec(v2)
-			return NewVec(v.x*v2.x,v.y*v2.y)
-		end,
-		repr=function(v) return "NewVec("..v.x..", "..{v.y}..")"end,
-		div=function(v,v2)
-			v2=toVec(v2)
-			return NewVec(v.x/v2.x,v.y/v2.y)
-		end,
-		floordiv=function(v,v2)
-			v2=toVec(v2)
-			return NewVec(v.x//v2.x,v.y//v2.y)
-		end,
-		floor=function(v)return v.floordiv(v,1)end,
-		dist2=function(v,v2)
-			v2=toVec(v2)
-			return(v.x-v2.x)^2+(v.y-v2.y)^2
-		end,
-		dist=function(v,v2)
-			v2=toVec(v2)
-			return math.sqrt(v.dist2(v,v2))
-		end,
-		norm=function(v)return v.dist(v,NewVec(0,0))end,
-		eq=function(v,v2)
-			v2=toVec(v2)
-			return v.x==v2.x and v.y==v2.y
-		end,
-		normalize=function(v)return v:div(v:norm()) end,
-		rotate=function(v,t)return NewVec(v.x*math.cos(t)-v.x*math.sin(t),v.y*math.sin(t)+v.y*math.cos(t))end,
-		copy=function(v)return NewVec(v.x,v.y)end,
-		zero=function()return NewVec(0,0)end,
-		xy=function(v)return v.x,v.y end
-	}
-	return v
+local Vectic={}
+Vectic.__index=Vectic
+
+Vectic.new=function(x,y)
+  local v = {x = x or 0, y = y or 0}
+  setmetatable(v, Vectic)
+  return v
 end
+
+function Vectic.__add(a,b)
+	a,b=Vectic.twoVec(a,b)
+	return Vectic.new(a.x+b.x,a.y+b.y)
+end
+function Vectic.__sub(a, b)
+	a,b=Vectic.twoVec(a,b)
+  return Vectic.new(a.x - b.x, a.y - b.y)
+end
+function Vectic.__mul(a, b)
+	a,b=Vectic.twoVec(a,b)
+	return Vectic.new(a.x*b.x,a.y*b.y)
+end
+function Vectic.__div(a, b)
+	a,b=Vectic.twoVec(a,b)
+	return Vectic.new(a.x/b.x,a.y/b.y)
+end
+function Vectic.__eq(a, b)
+	a,b=Vectic.twoVec(a,b)
+	return a.x==b.x and a.y==b.y
+end
+function Vectic.__ne(a, b)
+	a,b=Vectic.twoVec(a,b)
+	return not Vectic.__eq(a, b)
+end
+function Vectic.__unm(a)
+	return Vectic.new(-a.x, -a.y)
+end
+function Vectic.__lt(a, b)
+	a,b=Vectic.twoVec(a,b)
+	 return a.x < b.x and a.y < b.y
+end
+function Vectic.__le(a, b)
+	a,b=Vectic.twoVec(a,b)
+	 return a.x <= b.x and a.y <= b.y
+end
+function Vectic.__tostring(v)
+	 return "(" .. v.x .. ", " .. v.y .. ")"
+end
+function Vectic.twoVec(a,b)
+	return Vectic.toVec(a),Vectic.toVec(b)
+end
+function Vectic.toVec(a)
+	if type(a)=='number' then
+		return Vectic.new(a,a)
+	end
+	return a
+end
+function Vectic.floordiv(a,b)
+	b=Vectic.toVec(b)
+	return Vectic.new(a.x//b.x,a.y//b.y)
+end
+function Vectic.dist2(a,b)
+	b=Vectic.toVec(b)
+	return(a.x-b.x)^2+(a.y-b.y)^2
+end
+function Vectic.dist(a,b)
+	b=Vectic.toVec(b)
+	return math.sqrt(a.dist2(a,b))
+end
+function Vectic.floor(a)return a.floordiv(a,1)end
+function Vectic.norm(a)return a:dist(Vectic.new(0,0))end
+function Vectic.normalize(a)return a/a:norm() end
+function Vectic.rotate(a,t)return Vectic.new(a.x*math.cos(t)-a.x*math.sin(t),a.y*math.sin(t)+a.y*math.cos(t))end
+function Vectic.copy(a)return Vectic.new(a.x,a.y)end
+function Vectic.xy(a) return a.x,a.y end
 
 ---@class Body
 ---@field pos Vectic
@@ -73,24 +93,25 @@ end
 ---@field doMove boolean
 ---@field hist Vectic[]
 
-local G=.0009
+local G=.7
 
 ---@class Bodies
 Bodies={
-	limDist=2,
+	limDist=1,
 	---@type Body[]
 	bodies={},
 	---@type fun(s:Bodies,x:number,y:number,m:number,c:number,dm:boolean)
 	addBody=function(s,x,y,m,c,dm)
 		table.insert(s.bodies,{
-			pos=NewVec(x,y),
-			vel=NewVec(0,0),
+			pos=Vectic.new(x,y),
+			vel=Vectic.new(0,0),
 			m=m,
 			c=c,
 			doMove=dm,
 			hist={}
 		})
 	end,
+	center=1,
 	---@type fun(s:Bodies)
 	setup=function(s)
 		local x=W/2
@@ -98,28 +119,47 @@ Bodies={
 		local side=50
 		local height=math.sqrt(side^2-(side/2)^2)
 		
-		s:addBody(x+side/2,y-2,160,9,true)
-		s.bodies[1].vel=NewVec(.7,2)
-		-- s:addBody(x-30,y,10,6,true)
-		-- s.bodies[2].vel=NewVec(.6,-.2)
-		s:addBody(x,y,600,2,false)
+		-- s:addBody(30,0,1,9,true)
+		-- s.bodies[#s.bodies].vel=Vectic.new(.7,2)
+		s:addBody(-50,0,10,6,true)
+		s.bodies[#s.bodies].vel=Vectic.new(0,2)
+		s:addBody(1,-50,5,2,false)
+		s.bodies[#s.bodies].vel=Vectic.new(-1,0)
+		s:addBody(0,0,20,13,false)
 	end,
 	---@type fun(s:Bodies)
 	run=function(s)
+		local c=s.bodies[s.center].pos-Vectic.new(W/2,H/2)
+		if btnp(1) and s.center>1 then
+			s.center=s.center-1
+		elseif btnp(0) and s.center<#s.bodies then
+			s.center=s.center+1
+		end
 		for i,b in pairs(s.bodies) do
 			s:attract(i)
 		end
 		for _,b in pairs(s.bodies) do
-			if b.doMove then
-				table.insert(b.hist,b.pos)
-				b.pos=b.pos:add(b.vel)
-			end
 			for _,p in pairs(b.hist) do
-				circ(p.x,p.y,b.m/100,b.c-1)
+				circ(p.x-c.x,p.y-c.y,.5,14)
 			end
-			circ(b.pos.x,b.pos.y,b.m/50,b.c)
+		end
+		for _,b in pairs(s.bodies) do
+			local px,py=(b.pos-c):xy()
+			if b.doMove then
+				if F%1==0 then
+					table.insert(b.hist,b.pos)
+				end
+				b.pos=b.pos+b.vel
+			end
+			circ(px,py,b.m,b.c)
 			rect(_*15,0,5,5,b.c)
-			print(b.vel:norm(),10,_*10)
+			if b.doMove then
+				print(math.floor(b.pos:dist(0)),10,_*10,b.c)
+				local vel=(2*b.m*b.vel+b.pos-c)
+				line(px,py,vel.x,vel.y,10)
+				circ(vel.x,vel.y,2,10)
+				print(_,px-2,py-2,12)
+			end
 		end
 	end,
 	---@type fun(s:Bodies,bidx:number)
@@ -131,18 +171,20 @@ Bodies={
 					s:applyForce(b2,s:force(b1,b2))
 				end
 				local x,y=b1.pos:xy()
-				line(x,y,b2.pos.x,b2.pos.y,14)
+				local c=s.bodies[s.center].pos-Vectic.new(W/2,H/2)
+				line(x-c.x,y-c.y,b2.pos.x-c.x,b2.pos.y-c.y,b2.c)
 			end
 		end
 	end,
 	---@type fun(s:Bodies,b1:Body,b2:Body):Vectic
 	force=function(s,b1,b2)
 		local f=G*(b1.m*b2.m)/b1.pos:dist2(b2.pos)
-		return b1.pos:sub(b2.pos):normalize():mul(f)
+		local sub=b1.pos-b2.pos
+		return sub:normalize()*f
 	end,
 	---@type fun(s:Bodies,b:Body,f:Vectic)
 	applyForce=function(s,b,f)
-		b.vel=b.vel:add(f)
+		b.vel=b.vel+f
 	end
 }
 
@@ -151,6 +193,7 @@ Bodies:setup()
 function TIC()
   cls(0)
 	Bodies:run()
+	F=F+1
 end
 
 -- <TILES>
