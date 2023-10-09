@@ -100,6 +100,8 @@ function Vectic.rotate(a,t)return Vectic.new(a.x*math.cos(t)-a.x*math.sin(t),a.y
 function Vectic.copy(a)return Vectic.new(a.x,a.y)end
 ---@type fun(a:Vectic):number,number
 function Vectic.xy(a) return a.x,a.y end
+---@type fun(a: Vectic,f:fun(x:number):number):Vectic
+function Vectic.apply(a,f) return Vectic.new(f(a.x),f(a.y)) end
 
 local v=Vectic.new(2,4)
 
