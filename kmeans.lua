@@ -1,7 +1,7 @@
--- title:   game title
--- author:  game developer, email, etc.
--- desc:    short description
--- site:    website link
+-- title:   k-means
+-- author:  https://cohost.org/digo
+-- desc:    k-means clustering machine-learning algorithm visualization
+-- site:    https://github.com/rodigu/vectic
 -- license: MIT License (change this to your license of choice)
 -- version: 0.1
 -- script:  lua
@@ -9,6 +9,7 @@
 W=240
 H=136
 F=0
+local pad=8
 
 local Vectic={}
 Vectic.__index=Vectic
@@ -87,28 +88,26 @@ function Vectic.rotate(a,t)return Vectic.new(a.x*math.cos(t)-a.x*math.sin(t),a.y
 function Vectic.copy(a)return Vectic.new(a.x,a.y)end
 function Vectic.xy(a) return a.x,a.y end
 function Vectic.apply(a,f) return Vectic.new(f(a.x),f(a.y)) end
-function Vectic.rnd(rx,ry)
-	return Vectic.new(math.random(rx.x,rx.y),math.random(ry.x,ry.y))
+function Vectic.rnd(minx,maxx,miny,maxy)
+	return Vectic.new(math.random(minx,maxx),math.random(miny,maxy))
 end
 
----@type Vectic[]
-local points={}
+function resetPts(len)
+	local pts={}
+	for _=1,len do
+		table.insert(pts,Vectic.rnd(pad,W-pad,pad,H-pad))
+	end
+	return pts
+	
+end
+
 local p_n=500
-local pad=10
-local rx=Vectic.new(pad,W-pad)
-local ry=Vectic.new(pad,H-pad)
-
-for _=1,p_n do
-	table.insert(points,Vectic.rnd(rx,ry))
-end
-
 ---@type Vectic[]
-local ks={}
-local K=6
+local points=resetPts(p_n)
 
-for _=1,K do
-	table.insert(ks,Vectic.rnd(rx,ry))
-end
+local K=6
+---@type Vectic[]
+local ks=resetPts(K)
 
 ---@type fun(pts:Vectic[],ks:Vectic[]):number[]
 function groupPts(pts,ks)
@@ -155,21 +154,36 @@ end
 
 local original_pts=ks
 
+---@type fun(pts:Vectic[])
+function rndMove(pts)
+	for i,_ in pairs(pts) do
+		pts[i]=pts[i]+Vectic.rnd(-1,1,-1,1)
+		local x,y=pts[i]:xy()
+		if x>W-pad then pts[i].x=W-pad
+		elseif x<pad then pts[i].x=pad end
+		if y>H-pad then pts[i].y=H-pad
+		elseif y<pad then pts[i].y=pad end
+	end
+end
+
+SPEED=3
+
 function TIC()
 	F=F+1
 	cls(0)
+	
 	for i,c in pairs(ks) do
 		for _,p in pairs(points) do
 			if groupings[_]==i then
-				line(c.x,c.y,p.x,p.y,15)
+				line(c.x,c.y,p.x,p.y,colors[i])
 			end
 		end
-		circ(c.x,c.y,2,colors[i])
+		circ(c.x,c.y,3,14)
 	end
 	for _,p in pairs(points) do
 		circ(p.x,p.y,1,colors[groupings[_]])
 	end
-	if F%1==0 then
+	if F%SPEED==0 then
 		ks=mean_pts(points,groupings,K)
 		groupings=groupPts(points,ks)
 	end
@@ -178,18 +192,20 @@ function TIC()
 		local c=ks[_]
 		line(c.x,c.y,v.x,v.y,13)
 	end
+	if key(1) then
+		rndMove(points)
+	elseif keyp(19) then
+		points=resetPts(p_n)
+		ks=resetPts(K)
+		original_pts=ks
+		groupings=groupPts(points,ks)
+	elseif btnp(0) and SPEED>1 then SPEED=SPEED-1
+	elseif btnp(1) then SPEED=SPEED+1
+	end
+	print('press a to randomly move points',0,0,12)
+	print('press s to reset',0,H-pad,12,0,1,true)
+	print('up/down speed: '..60/SPEED,W-100,H-pad,12,0,1,true)
 end
-
--- <TILES>
--- 001:eccccccccc888888caaaaaaaca888888cacccccccacc0ccccacc0ccccacc0ccc
--- 002:ccccceee8888cceeaaaa0cee888a0ceeccca0ccc0cca0c0c0cca0c0c0cca0c0c
--- 003:eccccccccc888888caaaaaaaca888888cacccccccacccccccacc0ccccacc0ccc
--- 004:ccccceee8888cceeaaaa0cee888a0ceeccca0cccccca0c0c0cca0c0c0cca0c0c
--- 017:cacccccccaaaaaaacaaacaaacaaaaccccaaaaaaac8888888cc000cccecccccec
--- 018:ccca00ccaaaa0ccecaaa0ceeaaaa0ceeaaaa0cee8888ccee000cceeecccceeee
--- 019:cacccccccaaaaaaacaaacaaacaaaaccccaaaaaaac8888888cc000cccecccccec
--- 020:ccca00ccaaaa0ccecaaa0ceeaaaa0ceeaaaa0cee8888ccee000cceeecccceeee
--- </TILES>
 
 -- <WAVES>
 -- 000:00000000ffffffff00000000ffffffff
