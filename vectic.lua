@@ -102,9 +102,9 @@ function Vectic.copy(a)return Vectic.new(a.x,a.y)end
 function Vectic.xy(a) return a.x,a.y end
 ---@type fun(a: Vectic,f:fun(x:number):number):Vectic
 function Vectic.apply(a,f) return Vectic.new(f(a.x),f(a.y)) end
----@type fun(rx:Vectic,ry:Vectic):Vectic x is min, y is max
-function Vectic.rnd(rx,ry)
-	return Vectic.new(math.random(rx.x,rx.y),math.random(ry.x,ry.y))
+---@type fun(minx:number,maxx:number,miny:number,maxy:number):Vectic x is min, y is max
+function Vectic.rnd(minx,maxx,miny,maxy)
+	return Vectic.new(math.random(minx,maxx),math.random(miny,maxy))
 end
 
 local v=Vectic.new(2,4)
