@@ -4,7 +4,7 @@
 local Vectic={}
 Vectic.__index=Vectic
 
----@type fun(a:number,b:number): Vectic
+---@type fun(a?:number,b?:number): Vectic
 Vectic.new=function(x,y)
   local v = {x = x or 0, y = y or 0}
   setmetatable(v, Vectic)
@@ -102,6 +102,10 @@ function Vectic.copy(a)return Vectic.new(a.x,a.y)end
 function Vectic.xy(a) return a.x,a.y end
 ---@type fun(a: Vectic,f:fun(x:number):number):Vectic
 function Vectic.apply(a,f) return Vectic.new(f(a.x),f(a.y)) end
+---@type fun(rx:Vectic,ry:Vectic):Vectic x is min, y is max
+function Vectic.rnd(rx,ry)
+	return Vectic.new(math.random(rx.x,rx.y),math.random(ry.x,ry.y))
+end
 
 local v=Vectic.new(2,4)
 
