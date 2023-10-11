@@ -9,7 +9,8 @@
 W=240
 H=136
 F=0
-pad=8
+pad=4
+lowy=50
 
 local Vectic={}
 Vectic.__index=Vectic
@@ -100,7 +101,7 @@ function NewPoint(v)
 	return {
 		vec=v,
 		cluster=-1,
-		newighbors={},
+		neighbors={},
 		isCore=false
 	}
 end
@@ -150,30 +151,14 @@ end
 function rndPts(len)
 	local pts={}
 	for _=1,len do
-		table.insert(pts,NewPoint(Vectic.rnd(pad,W-pad,pad,H-pad)))
+		table.insert(pts,NewPoint(Vectic.rnd(pad,W-pad,pad,H-lowy)))
 	end
 	return pts
 	
 end
 
-N_PTS=400
-MIN=5
-E=10
-POINTS=rndPts(N_PTS)
-for i,_ in pairs(POINTS) do
-	setNeighbors(i,POINTS,E)
-end
-CORE=getCorePts(POINTS,MIN)
----@type Point[]
-FRONT={}
-table.insert(FRONT,CORE[math.random(#CORE)])
-FRONT[1].cluster=1
-CLST=1
-SPEED=2
-
--- DBSCAN(POINTS,10,3)
-
 RESET=function()
+	F=0
 	CLST=CLST+1
 	CORE=getCorePts(POINTS,MIN)
 	if #CORE>0 then
@@ -182,8 +167,26 @@ RESET=function()
 	end
 end
 
+N_PTS=150
+MIN=5
+E=15
+POINTS=rndPts(N_PTS)
+for i,_ in pairs(POINTS) do
+	setNeighbors(i,POINTS,E)
+end
+CORE=getCorePts(POINTS,MIN)
+---@type Point[]
+FRONT={}
+CLST=0
+SPEED=1
+CIRC_SIZE=3
+RESET()
+
 FULL_RESET=function(reset_pts)
-	if reset_pts then POINTS=rndPts(N_PTS)
+	F=0
+	if reset_pts then
+		POINTS=rndPts(N_PTS)
+		OF=0
 	else
 		for _,p in pairs(POINTS) do
 			p.cluster=-1
@@ -205,22 +208,71 @@ FULL_RESET=function(reset_pts)
 	CLST=1
 end
 
-function TIC()
-	F=F+1
-	cls(0)
+hdnlInput=function(txt)
+	if txt then
+		print('(up/down) min:'..MIN,80,0,12,false,1,true)
+		print('(z/x) pts:'..N_PTS,150,0,12,false,1,true)
+		print('(left/right) e:'..E,0,0,12,false,1,true)
+		print('e: distance, min: min neighbors to be core',0,H-6,12,false,1,true)
+		print('speed:'..1/SPEED,200,H-6,12,false,1,true)
+	end
+	if btnp(2) then
+		if E>1 then
+			E=E-1
+		end
+		FULL_RESET()
+	elseif btnp(3) then
+		E=E+1
+		FULL_RESET()
+	end
+	
+	if btnp(0) then
+		MIN=MIN+1
+		FULL_RESET()
+	elseif btnp(1) then
+		if MIN>1 then
+			MIN=MIN-1
+		end
+		FULL_RESET()
+	end
+
+	if btnp(5) then
+		N_PTS=N_PTS+10
+		FULL_RESET(true)
+	elseif btnp(4) then
+		N_PTS=N_PTS-10
+		FULL_RESET(true)
+	end
+
+	if btnp(6) then
+		SPEED=SPEED+1
+	elseif btnp(7) then
+		if SPEED>1 then SPEED=SPEED-1 end
+	end
+end
+
+drwPts=function()
 	for _,p in pairs(POINTS) do
 		if p.cluster~=-1 then
 			for _,n in pairs(p.neighbors) do
 				if n.cluster==p.cluster then
-					line(p.vec.x,p.vec.y,n.vec.x,n.vec.y,13)
+					line(p.vec.x,p.vec.y,n.vec.x,n.vec.y,n.cluster+3)
+				else
+					-- line(p.vec.x,p.vec.y,n.vec.x,n.vec.y,13)
 				end
 			end
 		end
 	end
 	for _,p in pairs(POINTS) do
-		circ(p.vec.x,p.vec.y,2,p.cluster)
-		circb(p.vec.x,p.vec.y,2,15)
+		circ(p.vec.x,p.vec.y,CIRC_SIZE-2,13)
+		if p.cluster~=-1 then
+			circb(p.vec.x,p.vec.y,CIRC_SIZE,p.cluster+3)
+			circ(p.vec.x,p.vec.y,CIRC_SIZE-2,12)
+		end
 	end
+end
+
+update=function()
 	if F%SPEED==0 and #CORE>0 then
 		local new_frontier={}
 		for _,f in pairs(FRONT) do
@@ -232,57 +284,75 @@ function TIC()
 		FRONT=new_frontier
 		if #FRONT==0 then RESET() end
 	end
-
-	print('(left/right) e:'..E,0,0,12,false,1,true)
-	if btnp(2) then
-		if E>1 then
-			E=E-1
-		end
-		FULL_RESET()
-	elseif btnp(3) then
-		E=E+1
-		FULL_RESET()
-	end
 	
-	print('(up/down) min:'..MIN,80,0,12,false,1,true)
-	if btnp(0) then
-		MIN=MIN+1
-		FULL_RESET()
-	elseif btnp(1) then
-		if MIN>1 then
-			MIN=MIN-1
+end
+
+drwFront=function()
+	for _,f in pairs(FRONT) do
+		for _,n in pairs(f.neighbors) do
+			if n.cluster==-1 then
+				circb(n.vec.x,n.vec.y,CIRC_SIZE+2,2)
+			end
 		end
-		FULL_RESET()
 	end
-
-	print('(z/x) pts:'..N_PTS,150,0,12,false,1,true)
-	if btnp(5) then
-		N_PTS=N_PTS+10
-		FULL_RESET(true)
-	elseif btnp(4) then
-		N_PTS=N_PTS-10
-		FULL_RESET(true)
-	end
-
-	print('e: distance, min: min neighbors to be core',0,H-6,12,false,1,true)
-	print('speed:'..1/SPEED,200,H-6,12,false,1,true)
-	if btnp(6) then
-		SPEED=SPEED+1
-	elseif btnp(7) then
-		if SPEED>1 then SPEED=SPEED-1 end
+	for _,f in pairs(FRONT) do
+		-- circb(f.vec.x,f.vec.y,E,2)
+		circ(f.vec.x,f.vec.y,CIRC_SIZE+2,f.cluster+3)
 	end
 end
 
--- <TILES>
--- 001:eccccccccc888888caaaaaaaca888888cacccccccacc0ccccacc0ccccacc0ccc
--- 002:ccccceee8888cceeaaaa0cee888a0ceeccca0ccc0cca0c0c0cca0c0c0cca0c0c
--- 003:eccccccccc888888caaaaaaaca888888cacccccccacccccccacc0ccccacc0ccc
--- 004:ccccceee8888cceeaaaa0cee888a0ceeccca0cccccca0c0c0cca0c0c0cca0c0c
--- 017:cacccccccaaaaaaacaaacaaacaaaaccccaaaaaaac8888888cc000cccecccccec
--- 018:ccca00ccaaaa0ccecaaa0ceeaaaa0ceeaaaa0cee8888ccee000cceeecccceeee
--- 019:cacccccccaaaaaaacaaacaaacaaaaccccaaaaaaac8888888cc000cccecccccec
--- 020:ccca00ccaaaa0ccecaaa0ceeaaaa0ceeaaaa0cee8888ccee000cceeecccceeee
--- </TILES>
+OF=0
+
+function TIC()
+	F=F+1
+	OF=OF+1
+	cls(0)
+
+	hdnlInput()
+	
+	-- if F<120 then
+	-- 	for _,p in pairs(POINTS) do
+	-- 		circ(p.vec.x,p.vec.y,E,15)
+	-- 	end
+	-- end
+	-- if OF<120 then
+	-- 	for _,p in pairs(POINTS) do
+	-- 		for _,n in pairs(p.neighbors) do
+	-- 			line(p.vec.x,p.vec.y,n.vec.x,n.vec.y,12)
+	-- 		end
+	-- 	end
+	-- 	drwPts()
+	-- 	return
+	-- end
+
+	drwPts()
+	update()
+	drwFront()
+
+	if #FRONT>=1 then col=FRONT[1].cluster+3 end
+
+	local ytop=H-lowy+CIRC_SIZE/2+1
+	rectb(0,ytop,W,lowy-CIRC_SIZE,14)
+	local col=13
+	print('frontier',20,ytop+8,col)
+	print('frontier neighbors',20,ytop+20,2)
+	spr(257,128,ytop+7,0)
+	print('E: '..E,140,ytop+8,12)
+	spr(256,128,ytop+19,0)
+	print('minPts: '..MIN,140,ytop+20,12)
+	spr(258,128,ytop+31,0)
+	print('Speed: '..60/SPEED,140,ytop+32,12)
+	spr(259,8,ytop+31,0)
+	print('Points: '..N_PTS,20,ytop+32,12)
+	
+end
+
+-- <SPRITES>
+-- 000:00c000000ccc0000c0c0c00000c0000000000c00000c0c0c0000ccc000000c00
+-- 001:00000c00000000c00000cccc00c000c00c000c00cccc00000c00000000c00000
+-- 002:ccc00000c0c00000ccc00000c0c00cccc0c00c0000000ccc0000000c00000ccc
+-- 003:cccc000000c000000c000000cccc000c0000c0c000000c000000c0c0000c000c
+-- </SPRITES>
 
 -- <WAVES>
 -- 000:00000000ffffffff00000000ffffffff
