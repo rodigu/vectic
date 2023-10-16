@@ -147,7 +147,11 @@ function mean_pts(pts,gs,k)
 		for _,v in pairs(inG) do
 			sum=sum+v
 		end
-		table.insert(means,sum/#inG)
+		if MOUSE_PT~=i then
+			table.insert(means,sum/#inG)
+		else
+			table.insert(means,ks[MOUSE_PT])
+		end
 	end
 	return means
 end
@@ -167,6 +171,33 @@ function rndMove(pts)
 end
 
 SPEED=3
+---@type integer
+MOUSE_PT=nil
+
+function MouseMove()
+	local x,y,l=mouse()
+	local mv=Vectic.new(x,y)
+	if not l then
+		MOUSE_PT=nil
+	end
+	if MOUSE_PT~=nil then
+		local v=ks[MOUSE_PT]
+		v.x=x
+		v.y=y
+		circ(v.x,v.y,2,15)
+		circb(v.x,v.y,6,2)
+		return
+	end
+	for i,c in pairs(ks) do
+		if mv:dist(c) < 4 then
+			circ(c.x,c.y,4,12)
+			circb(c.x,c.y,4,14)
+		end
+		if mv:dist(c) < 4 and l and MOUSE_PT==nil then
+			MOUSE_PT=i
+		end
+	end
+end
 
 function TIC()
 	F=F+1
@@ -205,6 +236,7 @@ function TIC()
 	print('press a to randomly move points',0,0,12)
 	print('press s to reset',0,H-pad,12,0,1,true)
 	print('up/down speed: '..60/SPEED,W-100,H-pad,12,0,1,true)
+	MouseMove()
 end
 
 -- <WAVES>
