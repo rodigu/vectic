@@ -1,5 +1,7 @@
 # Machine Learning on the TIC-80: DBSCAN
 
+DEMO: https://rmorais.itch.io/tic80-dbscan
+
 ## Intro
 
 DBSCAN is a clustering algorithm that makes use of a network data structure to find patterns in data.
